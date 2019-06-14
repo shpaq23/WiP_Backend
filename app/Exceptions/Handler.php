@@ -2,6 +2,7 @@
 
 namespace App\Exceptions;
 
+use App\Exceptions\Custom\HttpCodesExceptions;
 use Exception;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 
@@ -46,6 +47,7 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Exception $exception)
     {
-        return parent::render($request, $exception);
+        $response = (new HttpCodesExceptions())->check($exception);
+        return (!$response)? parent::render($request, $exception) : $response;
     }
 }
