@@ -18,13 +18,8 @@ class AuthController extends Controller
 
     public function register(Register $request)
     {
+        $this->success();
 
-        try {
-            $this->success();
-            $this->notValidRequest();
-        } catch(\Exception $e) {
-            $this->throwException($e);
-        }
         return $this->output();
     }
 }
