@@ -9,13 +9,16 @@
 namespace App\Http\Controllers;
 
 
+use App\Http\Requests\Auth\Login;
 use App\Http\Requests\Auth\ResetPassword as ResetPasswordRequest;
 use App\Http\Requests\Auth\Register;
 use App\Http\Requests\Outputs;
 use App\Mail\ResetPassword;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Mail\ActivateAccount;
 use App\User;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 
 class AuthController extends Controller
@@ -25,7 +28,7 @@ class AuthController extends Controller
     public function register(Register $request)
     {
         $user = User::newUser($request);
-        $this->success($user);
+        $this->success();
         Mail::to($user)->send(new ActivateAccount($user));
         return $this->output();
     }
@@ -77,4 +80,29 @@ class AuthController extends Controller
         }
         return $this->output();
     }
+    public function login(Login $request)
+    {
+        if (!Auth::attempt($request->all())) {
+            $this->notAcceptable(['message' => 'Wrong E-mail or Password.', 'inactive' => false]);
+            return $this->output();
+        }
+        $user = $request->user();
+        if (!$user->email_verified_at) {
+            $this->notAcceptable(['message' => 'Your account is inactive.', 'inactive' => true]);
+            return $this->output();
+        }
+        $tokenResult = $user->createToken('Personal Access Token');
+        $tokenResult->token->save();
+        $this->success([
+            'access_token' => $tokenResult->accessToken,
+            'token_type' => 'Bearer',
+            'expires_at' => Carbon::parse(
+                $tokenResult->token->expires_at
+            )->toDateTimeString()
+        ]);
+
+        return $this->output();
+
+    }
+
 }

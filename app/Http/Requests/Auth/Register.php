@@ -22,7 +22,7 @@ class Register extends Request
             'email' => 'required|email|unique:users',
             'password' => 'required|confirmed|min:8',
             'description' => 'string',
-            'position' => 'required|in:admin,tester,developer,project_manager',
+            'position' => 'required|in:tester,developer,project_manager',
             'specialization_field_1' => 'required_unless:position,admin|max:255',
             'specialization_field_2' => 'required_unless:position,admin|max:255',
             'checkbox' => 'required_unless:position,admin|boolean',
