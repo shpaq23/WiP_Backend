@@ -10,3 +10,6 @@
 | contains the "web" middleware group. Now create something great!
 |
 */
+//Route::get('test', 'UserController@test');
+
+Route::get('user/activate/{token}', 'AuthController@activate');

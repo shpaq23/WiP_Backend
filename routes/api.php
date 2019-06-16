@@ -26,4 +26,7 @@ Route::group(['middleware' => 'auth:api'], function(){
 /// Authentication
 Route::post('user/register', 'AuthController@register');
 Route::post('user/login', 'AuthController@login');
+Route::get('user/reactivate/{email}', 'AuthController@reactivate');
+Route::get('user/reset/{email}', 'AuthController@resetPasswordStep1');
+Route::post('user/reset', 'AuthController@resetPasswordStep2');
 Route::get('user/email', 'AuthController@email');

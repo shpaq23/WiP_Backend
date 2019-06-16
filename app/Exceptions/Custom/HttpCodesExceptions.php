@@ -37,7 +37,6 @@ class HttpCodesExceptions
 
         $message = json_decode($message, true)['data'];
 
-
         $this->checkIsCodeSystemError($code, $exception->getMessage());
 
         return array_key_exists($code, $this->availables)?
@@ -58,7 +57,6 @@ class HttpCodesExceptions
     protected function checkIsCodeSystemError($code, $message = ''): void
     {
         if(!array_key_exists($code, $this->availables)) {
-            Log::error($message);
             \Exceptions::throwSystemError();
         }
     }
