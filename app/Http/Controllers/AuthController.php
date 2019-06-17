@@ -9,13 +9,15 @@
 namespace App\Http\Controllers;
 
 
+use App\Http\Requests\Auth\Activate;
 use App\Http\Requests\Auth\Login;
-use App\Http\Requests\Auth\ResetPassword as ResetPasswordRequest;
+use App\Http\Requests\Auth\Reactivate;
+use App\Http\Requests\Auth\ResetPasswordStep1;
+use App\Http\Requests\Auth\ResetPasswordStep2;
 use App\Http\Requests\Auth\Register;
 use App\Http\Requests\Outputs;
 use App\Mail\ResetPassword;
 use Carbon\Carbon;
-use Illuminate\Http\Request;
 use App\Mail\ActivateAccount;
 use App\User;
 use Illuminate\Support\Facades\Auth;
@@ -32,65 +34,49 @@ class AuthController extends Controller
         Mail::to($user)->send(new ActivateAccount($user));
         return $this->output();
     }
-    public function activate(Request $request)
+    public function activate(Activate $request)
     {
         $token = $request->route('token');
-        $user = User::getUserByToken($token, false);
-        if ($user) {
-            $user->activate();
-            return redirect(env('ACTIVATE_REDIRECT'));
-        }
-        $this->serviceUnavailable([]);
-        return $this->output();
+        (User::getUserByToken($token, false))
+            ->activate();
+        return redirect(env('ACTIVATE_REDIRECT'));
     }
-    public function reactivate(Request $request)
+    public function reactivate(Reactivate $request)
     {
         $email = $request->route('email');
-        $user = User::getUserByEmail($email, false);
-        if ($user) {
-            $user = $user->setNewToken();
-            Mail::to($user)->send(new ActivateAccount($user));
-            $this->success();
-        } else {
-            $this->serviceUnavailable([]);
-        }
+        $user = (User::getUserByEmail($email, false))
+            ->setNewToken();
+        Mail::to($user)->send(new ActivateAccount($user));
+        $this->success();
         return $this->output();
     }
-    public function resetPasswordStep1(Request $request)
+    public function resetPasswordStep1(ResetPasswordStep1 $request)
     {
         $email = $request->route('email');
-        $user = User::getUserByEmail($email);
-        if($user) {
-            $user = $user->setNewToken();
-            Mail::to($user)->send(new ResetPassword($user));
-            $this->success();
-        } else {
-            $this->serviceUnavailable([]);
-        }
+        $user = (User::getUserByEmail($email))
+            ->setNewToken();
+        Mail::to($user)->send(new ResetPassword($user));
+        $this->success();
         return $this->output();
     }
-    public function resetPasswordStep2(ResetPasswordRequest $request)
+    public function resetPasswordStep2(ResetPasswordStep2 $request)
     {
-        $user = User::getUserByToken($request->token);
-        if ($user) {
-            $user->setNewPassword($request->password);
-            $this->success();
-        } else {
-            $this->serviceUnavailable([]);
-        }
+        (User::getUserByToken($request->token))
+            ->setNewPassword($request->password);
+        $this->success();
         return $this->output();
     }
     public function login(Login $request)
     {
-        if (!Auth::attempt($request->all())) {
-            $this->notAcceptable(['message' => 'Wrong E-mail or Password.', 'inactive' => false]);
+
+        if (!Auth::attempt(array_merge($request->all()))) {
+            $this->notAcceptable(['Wrong E-mail or Password.']);
             return $this->output();
         }
         $user = $request->user();
-        if (!$user->email_verified_at) {
-            $this->notAcceptable(['message' => 'Your account is inactive.', 'inactive' => true]);
-            return $this->output();
-        }
+        if (!$user->active) {$this->notAcceptable(['This User is inactive.']); return $this->output();}
+        if ($user->deleted) {$this->notAcceptable(['This User has been deleted.']); return $this->output();}
+        $user->updateActivity();
         $tokenResult = $user->createToken('Personal Access Token');
         $tokenResult->token->save();
         $this->success([
@@ -103,6 +89,13 @@ class AuthController extends Controller
 
         return $this->output();
 
+    }
+    public function logout()
+    {
+        $user = auth()->guard('api')->user();
+        $user->logout();
+        $this->success();
+        return $this->output();
     }
 
 }

@@ -74,6 +74,7 @@ trait Outputs
 
     protected function success($data = [], $code = 200)
     {
+
         $this->response['code'] = 200;
         $this->response['message'] = 'success';
         $this->response['data'] = $data ?? [];

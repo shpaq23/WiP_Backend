@@ -3,6 +3,9 @@
 namespace App;
 
 use App\Http\Requests\Request;
+use App\Http\Requests\User\Edit;
+use App\Models\Uuid;
+use DateTimeInterface;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -10,7 +13,7 @@ use Laravel\Passport\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, Notifiable;
+    use HasApiTokens, Notifiable, Uuid;
 
 
     /**
@@ -21,7 +24,8 @@ class User extends Authenticatable
     protected $fillable = [
         'name', 'email', 'password', 'first_name', 'last_name',
         'description', 'specialization_field_1', 'specialization_field_2', 'checkbox',
-        'position', 'last_activity', 'email_verified_at', 'token'
+        'position', 'last_activity', 'email_verified_at', 'token', 'active', 'uuid', 'deleted',
+        'deleted_at'
     ];
 
     /**
@@ -30,7 +34,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $hidden = [
-        'password', 'token',
+        'password', 'token'
     ];
 
     /**
@@ -39,52 +43,58 @@ class User extends Authenticatable
      * @var array
      */
     protected $casts = [
-        'email_verified_at' => 'datetime',
-        'last_activity' => 'datetime'
+        'email_verified_at' => 'datetime:Y-m-d H:00',
+        'last_activity' => 'datetime:Y-m-d H:00',
+        'updated_at' => 'datetime:Y-m-d H:00',
+        'created_at' =>'datetime:Y-m-d H:00'
     ];
-
     static function newUser(Request $request): User
     {
         $request = $request->all();
         $request['name'] = $request['first_name'] . ' ' . $request['last_name'];
         $request['password'] = bcrypt($request['password']);
         $request['token'] = getSecureToken();
+
         $user = new User($request);
         $user->save();
 
         return $user;
     }
-
     static function getUserByToken($token, $verified = true): ?User
     {
-        $user = User::where([
+        return User::where([
             'token' => $token,
-        ]);
-        if (!$verified) {
-            $user->whereNull('email_verified_at');
-        } else {
-            $user->whereNotNull('email_verified_at');
-        }
-        return $user->first();
+            'deleted' => false,
+            'active' => $verified
+        ])->first();
 
-        return $user->first();
     }
     static function getUserByEmail($email, $verified = true): ?User
     {
-        $user = User::where([
+        return User::where([
             'email' => $email,
-        ]);
-        if (!$verified) {
-           $user->whereNull('email_verified_at');
-        } else {
-            $user->whereNotNull('email_verified_at');
-        }
-        return $user->first();
+            'deleted' => false,
+            'active' => $verified
+        ])->first();
     }
-    public function activate()
+    static function getUserByUuid($uuid, $verified = true): ?User
+    {
+        return User::where([
+            'uuid' => $uuid,
+            'active' => $verified
+        ])->first();
+    }
+    static function updateUser(Edit $edit): User
+    {
+        $user = User::where(['uuid' => $edit->uuid])->first();
+        $user->update($edit->all());
+        return $user->refresh();
+    }
+    public function activate($byAdmin = false)
     {
         $this->token = null;
-        $this->email_verified_at = now();
+        $this->email_verified_at = !$byAdmin ? now() : null;
+        $this->active = true;
         $this->save();
     }
     public function setNewToken(): User
@@ -102,4 +112,62 @@ class User extends Authenticatable
 
         return $this->refresh();
     }
+    public function isAdmin(): bool
+    {
+        return $this->position==='admin';
+    }
+    public function updateActivity()
+    {
+        $this->last_activity = now();
+        $this->save();
+    }
+    public function setAdmin()
+    {
+        $this->position = 'admin';
+        $this->save();
+    }
+    public function delete()
+    {
+        $this->deleted = true;
+        $this->deleted_at = now();
+        $this->save();
+    }
+    public function restore()
+    {
+        $this->deleted = false;
+        $this->deleted_at = null;
+        $this->save();
+    }
+    public function logout()
+    {
+        foreach ($this->tokens as $token) {
+            $token->delete();
+        }
+    }
+    public function getPretty(): array
+    {
+
+        $arr = [
+            'uuid' => $this->uuid,
+            'firstName' => $this->first_name,
+            'lastName' => $this->last_name,
+            'email' => $this->email,
+            'description' => $this->description,
+            'position' => $this->position,
+            'specializationField1' => $this->specialization_field_1,
+            'specializationField2' => $this->specialization_field_2,
+            'checkbox' => $this->checkbox,
+        ];
+        if ($this->isAdmin()) {
+            $arr['lastActivity'] = $this->last_activity? $this->last_activity->toDateTimeString(): null;
+            $arr['deletedAt'] = $this->deleted_at? $this->deleted_at->toDateTimeString(): null;
+            $arr['updatedAt'] = $this->updated_at? $this->updated_at->toDateTimeString() : null;
+            $arr['createdAt'] = $this->created_at? $this->created_at->toDateTimeString(): null;
+            $arr['email_verified_at'] = $this->email_verified_at? $this->email_verified_at->toDateTimeString(): null;
+            $arr['active'] = $this->active;
+            $arr['deleted'] = $this->deleted;
+        }
+        return $arr;
+    }
+
 }

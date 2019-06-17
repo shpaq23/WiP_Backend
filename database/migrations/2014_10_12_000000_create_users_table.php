@@ -16,6 +16,7 @@ class CreateUsersTable extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->bigIncrements('id');
+            $table->uuid('uuid');
             $table->string('name')->nullable();
             $table->string('first_name', 40)->nullable(false);
             $table->string('last_name', 40)->nullable(false);
@@ -25,7 +26,10 @@ class CreateUsersTable extends Migration
             $table->string('specialization_field_2')->nullable(true);
             $table->boolean('checkbox')->nullable(true);
             $table->enum('position', ['admin', 'tester', 'developer', 'project_manager'])->nullable(false);
-            $table->timestamp('email_verified_at')->nullable();
+            $table->boolean('active')->default(false);
+            $table->boolean('deleted')->default(false);
+            $table->timestamp('deleted_at')->nullable(true);
+            $table->timestamp('email_verified_at')->nullable(true);
             $table->string('password')->nullable(false);
             $table->string('token', 32)->nullable(true);
 
