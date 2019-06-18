@@ -13,6 +13,8 @@ use App\Http\Requests\User\Delete;
 use App\Http\Requests\User\Edit;
 use App\Http\Requests\User\Restore;
 use App\Http\Requests\User\SetAdmin;
+use App\Mail\ActivateAccount;
+use App\Mail\ResetPassword;
 use App\User;
 use Illuminate\Http\Request;
 
@@ -23,6 +25,11 @@ class UserController extends Controller
     public function __construct()
     {
         $this->loggedUser = auth()->guard('api')->user();
+    }
+    public function test()
+    {
+        $user = User::all()[0];
+        return new ResetPassword($user);
     }
 
     public function user()

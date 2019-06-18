@@ -13,3 +13,4 @@
 //Route::get('test', 'UserController@test');
 
 Route::get('user/activate/{token}', 'AuthController@activate');
+Route::get('test', 'UserController@test');
