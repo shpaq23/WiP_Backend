@@ -10,6 +10,7 @@ namespace App\Http\Controllers;
 
 
 use App\Http\Requests\Auth\Activate;
+use App\Http\Requests\Auth\Email;
 use App\Http\Requests\Auth\Login;
 use App\Http\Requests\Auth\Reactivate;
 use App\Http\Requests\Auth\ResetPasswordStep1;
@@ -94,6 +95,11 @@ class AuthController extends Controller
     {
         $user = auth()->guard('api')->user();
         $user->logout();
+        $this->success();
+        return $this->output();
+    }
+    public function email(Email $request)
+    {
         $this->success();
         return $this->output();
     }

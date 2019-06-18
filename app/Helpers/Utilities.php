@@ -1,4 +1,6 @@
 <?php
+use Illuminate\Support\Facades\Storage;
+
 /**
  * Created by PhpStorm.
  * User: shpaq
@@ -59,4 +61,46 @@ function getSecureToken($type = 'alnum', $length = 32)
         $token .= $pool[$crypto_rand_secure( 0, $max )];
     }
     return $token;
+}
+
+function excelParser($filename) {
+    $file_path = "public/excel/$filename";
+    if (!Storage::exists($file_path)) {
+        return false;
+    }
+
+    $storagePath  = Storage::disk('local')->getDriver()->getAdapter()->getPathPrefix();
+    $full_path = $storagePath.$file_path;
+
+    $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+    $reader->setReadDataOnly(true);
+    try {
+        $spreadsheet = $reader->load($full_path);
+        $worksheet = $spreadsheet->getActiveSheet();
+    } catch (\PhpOffice\PhpSpreadsheet\Reader\Exception $e) {
+        return false;
+    }
+    $returning_array = [];
+    $columns = [];
+
+
+    foreach($worksheet->getRowIterator() as $row_id => $row) {
+        $i = 0;
+        $arr = [];
+        foreach($row->getCellIterator() as $cell) {
+            if($cell->getRow() === 1) {
+                $columns[] = $cell->getValue();
+            } else {
+                $arr[$columns[$i]] = $cell->getCalculatedValue();
+                $i++;
+
+
+                if($i===sizeof($columns)): break; endif;
+            }
+        }
+        if($row_id !== 1) {
+            $returning_array[] = $arr;
+        }
+    }
+    return $returning_array;
 }
