@@ -16,7 +16,7 @@ class Email extends Request
     public function rules(): array
     {
         return [
-            'email' => ['required', 'exists:users'],
+            'email' => ['required', 'unique:users'],
         ];
     }
 

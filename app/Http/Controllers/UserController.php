@@ -26,11 +26,11 @@ class UserController extends Controller
     {
         $this->loggedUser = auth()->guard('api')->user();
     }
-    public function test()
-    {
-        $user = User::all()[0];
-        return new ResetPassword($user);
-    }
+//    public function test()
+//    {
+//        $user = User::all()[0];
+//        return new ResetPassword($user);
+//    }
 
     public function user()
     {
