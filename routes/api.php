@@ -21,10 +21,11 @@ Route::group(['middleware' => 'auth:api'], function(){
     Route::get('user/logout', 'AuthController@logout');
     Route::get('user', 'UserController@user');
     Route::post('user/edit', 'UserController@edit');
+    Route::get('users', 'UserController@users')->middleware('admin');
     Route::get('user/setadmin/{uuid}', 'UserController@setAdmin')->middleware('admin');
     Route::get('user/activate/{uuid}', 'UserController@activate')->middleware('admin');
     Route::get('user/restore/{uuid}', 'UserController@restore')->middleware('admin');
-    Route::get('user/delete/{uuid}', 'UserController@delete');
+    Route::get('user/delete/{uuid}', 'UserController@delete')->middleware('admin');
 
 });
 

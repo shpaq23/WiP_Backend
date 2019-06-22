@@ -32,13 +32,14 @@ class UserController extends Controller
 //        return new ResetPassword($user);
 //    }
 
+    public function users()
+    {
+        $this->success(array_map(function(User $user){return $user->getPretty(true);}, iterator_to_array(User::all())));
+        return $this->output();
+    }
     public function user()
     {
-        if ($this->loggedUser->isAdmin()) {
-            $this->success(array_map(function(User $user){return $user->getPretty();}, iterator_to_array(User::all())));
-        } else {
-            $this->success($this->loggedUser->getPretty());
-        }
+        $this->success($this->loggedUser->getPretty($this->loggedUser->isAdmin()));
         return $this->output();
     }
     public function edit(Edit $request)
@@ -48,41 +49,36 @@ class UserController extends Controller
             return $this->output();
         }
         $user = User::updateUser($request);
-        $this->success($user->getPretty());
+        $this->success($user->getPretty($this->loggedUser->isAdmin()));
         return $this->output();
     }
     public function setAdmin(SetAdmin $request)
     {
-        User::getUserByUuid($request->uuid)
-            ->setAdmin();
-        $this->success();
+        $user = User::getUserByUuid($request->uuid, null,true);
+        $user->setAdmin();
+        $this->success($user->getPretty(true));
         return $this->output();
 
     }
     public function activate(Activate $request)
     {
-        User::getUserByUuid($request->uuid)
-            ->activate(true);
-        $this->success();
+        $user = User::getUserByUuid($request->uuid, null, true);
+        $user->activate(true);
+        $this->success($user->getPretty(true));
         return $this->output();
     }
     public function restore(Restore $request)
     {
-        User::getUserByUuid($request->uuid)
-            ->restore();
-        $this->success();
+        $user = User::getUserByUuid($request->uuid, null, true);
+        $user->restore();
+        $this->success($user->getPretty(true));
         return $this->output();
     }
     public function delete(Delete $request)
     {
-        if (!$this->loggedUser->isAdmin() && $this->loggedUser->uuid !== $request->uuid) {
-            $this->notAcceptable(['Only Admin can delete another user.']);
-            return $this->output();
-        }
-        $user = User::getUserByUuid($request->uuid);
+        $user = User::getUserByUuid($request->uuid, null,true);
         $user->delete();
-        $user->logout();
-        $this->success();
+        $this->success($user->getPretty(true));
         return $this->output();
     }
 }

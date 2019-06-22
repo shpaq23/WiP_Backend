@@ -19,7 +19,7 @@ class Login extends Request
     {
         return [
             'email' => 'required|email|string',
-            'password' => 'required|string|min:8'
+            'password' => 'required|string|'
         ];
     }
 }

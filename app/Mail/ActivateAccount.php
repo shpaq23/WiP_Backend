@@ -41,7 +41,12 @@ class ActivateAccount extends Mailable
         $activationUrl = URL::to('/user/activate/'.$this->user->token);
         /// wip
         $positionMapper = [
-            'admin' => ['name' => 'Administrator'],
+            'admin' => [
+                'name' => 'Administrator',
+                'specialization_field_1' => 'Specialization Field 1',
+                'specialization_field_2' => 'Specialization Field 2',
+                'checkbox' => 'Knows how to admin'
+            ],
             'tester' => [
                 'name' => 'Tester',
                 'specialization_field_1' => 'Testing Systems',
@@ -59,7 +64,8 @@ class ActivateAccount extends Mailable
                 'specialization_field_1' => 'Methodologies for Project Management',
                 'specialization_field_2' => 'Reporting Systems',
                 'checkbox' => 'Knows Scrum'
-            ]
+            ],
+
         ];
         return $this
             ->view('wip')

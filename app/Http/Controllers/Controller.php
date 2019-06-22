@@ -14,7 +14,7 @@ class Controller extends BaseController
 
     protected function output()
     {
-        return response()->json($this->response);
+        return response()->json($this->response, $this->response['code']);
     }
 
 }

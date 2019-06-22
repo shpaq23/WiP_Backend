@@ -19,7 +19,7 @@ class Admin extends UserController
      */
     public function handle($request, Closure $next)
     {
-        if ($this->loggedUser->position !== 'admin') {
+        if (!$this->loggedUser->isAdmin()) {
             $this->notAcceptable(['This is admin endpoint.']);
             return $this->output();
         }

@@ -24,7 +24,7 @@ class User extends Authenticatable
     protected $fillable = [
         'name', 'email', 'password', 'first_name', 'last_name',
         'description', 'specialization_field_1', 'specialization_field_2', 'checkbox',
-        'position', 'last_activity', 'email_verified_at', 'token', 'active', 'uuid', 'deleted',
+        'position', 'last_activity', 'email_verified_at', 'token', 'active', 'uuid', 'deleted', 'is_admin',
         'deleted_at'
     ];
 
@@ -77,8 +77,13 @@ class User extends Authenticatable
             'active' => $verified
         ])->first();
     }
-    static function getUserByUuid($uuid, $verified = true): ?User
+    static function getUserByUuid($uuid, $verified = true, $for_admin = false): ?User
     {
+        if ($for_admin) {
+            return User::where([
+                'uuid' => $uuid,
+            ])->first();
+        }
         return User::where([
             'uuid' => $uuid,
             'active' => $verified
@@ -114,7 +119,7 @@ class User extends Authenticatable
     }
     public function isAdmin(): bool
     {
-        return $this->position==='admin';
+        return $this->is_admin;
     }
     public function updateActivity()
     {
@@ -123,7 +128,7 @@ class User extends Authenticatable
     }
     public function setAdmin()
     {
-        $this->position = 'admin';
+        $this->is_admin= 1;
         $this->save();
     }
     public function delete()
@@ -144,7 +149,7 @@ class User extends Authenticatable
             $token->delete();
         }
     }
-    public function getPretty(): array
+    public function getPretty($forAdmin = false): array
     {
 
         $arr = [
@@ -157,14 +162,11 @@ class User extends Authenticatable
             'specializationField1' => $this->specialization_field_1,
             'specializationField2' => $this->specialization_field_2,
             'checkbox' => $this->checkbox,
+            'isAdmin' => $this->is_admin,
         ];
-        if ($this->isAdmin()) {
+        if ($forAdmin) {
             $arr['lastActivity'] = $this->last_activity? $this->last_activity->toDateTimeString(): null;
-            $arr['deletedAt'] = $this->deleted_at? $this->deleted_at->toDateTimeString(): null;
-            $arr['updatedAt'] = $this->updated_at? $this->updated_at->toDateTimeString() : null;
-            $arr['createdAt'] = $this->created_at? $this->created_at->toDateTimeString(): null;
-            $arr['email_verified_at'] = $this->email_verified_at? $this->email_verified_at->toDateTimeString(): null;
-            $arr['active'] = $this->active;
+            $arr['activated'] = $this->active;
             $arr['deleted'] = $this->deleted;
         }
         return $arr;

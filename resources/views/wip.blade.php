@@ -9,10 +9,8 @@
             <p>{{$user->description}}</p>
         @endif
         <p>Position: <span class="bold">{{$positionMapper[$user->position]['name']}}</span></p>
-        @if ($user->position !== 'admin')
-            <p>{{$positionMapper[$user->position]['specialization_field_1']}}: <span class="bold">{{$user->specialization_field_1}}</span></p>
-            <p>{{$positionMapper[$user->position]['specialization_field_2']}}: <span class="bold">{{$user->specialization_field_2}}</span></p>
-            <p>{{$positionMapper[$user->position]['checkbox']}}: <span class="bold">{{$user->checkbox? 'Yes' : 'No'}}</span></p>
-        @endif
+        <p>{{$positionMapper[$user->position]['specialization_field_1']}}: <span class="bold">{{$user->specialization_field_1}}</span></p>
+        <p>{{$positionMapper[$user->position]['specialization_field_2']}}: <span class="bold">{{$user->specialization_field_2}}</span></p>
+        <p>{{$positionMapper[$user->position]['checkbox']}}: <span class="bold">{{$user->checkbox? 'Yes' : 'No'}}</span></p>
     </div>
 @endsection

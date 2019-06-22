@@ -22,10 +22,11 @@ class CreateUsersTable extends Migration
             $table->string('last_name', 40)->nullable(false);
             $table->string('email')->unique()->nullable(false);
             $table->text('description')->nullable();
-            $table->string('specialization_field_1')->nullable(true);
-            $table->string('specialization_field_2')->nullable(true);
-            $table->boolean('checkbox')->nullable(true);
-            $table->enum('position', ['admin', 'tester', 'developer', 'project_manager'])->nullable(false);
+            $table->string('specialization_field_1')->nullable(false);
+            $table->string('specialization_field_2')->nullable(false);
+            $table->boolean('checkbox')->nullable(false);
+            $table->enum('position', ['tester', 'developer', 'project_manager'])->nullable(false);
+            $table->boolean('is_admin')->nullable(false)->default(false);
             $table->boolean('active')->default(false);
             $table->boolean('deleted')->default(false);
             $table->timestamp('deleted_at')->nullable(true);

@@ -37,6 +37,6 @@ class IsUserActive implements Rule
      */
     public function message()
     {
-        return 'User must be active amd should not be removed.';
+        return 'User must be active and should not be removed.';
     }
 }

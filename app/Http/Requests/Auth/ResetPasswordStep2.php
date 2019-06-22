@@ -26,7 +26,7 @@ class ResetPasswordStep2 extends Request
     {
         return [
             'password' => 'required|confirmed|min:8',
-            'token' => ['required', 'exists:users', new IsUserActive]
+            'token' => ['required', 'exists:users']
         ];
     }
 }

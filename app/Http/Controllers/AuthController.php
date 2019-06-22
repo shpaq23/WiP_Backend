@@ -40,7 +40,7 @@ class AuthController extends Controller
         $token = $request->route('token');
         (User::getUserByToken($token, false))
             ->activate();
-        return redirect(env('ACTIVATE_REDIRECT'));
+        return redirect(env('ACTIVATE_REDIRECT').'?success=activated');
     }
     public function reactivate(Reactivate $request)
     {
@@ -71,12 +71,12 @@ class AuthController extends Controller
     {
 
         if (!Auth::attempt(array_merge($request->all()))) {
-            $this->notAcceptable(['Wrong E-mail or Password.']);
+            $this->notAcceptable('Wrong E-mail or Password.');
             return $this->output();
         }
         $user = $request->user();
-        if (!$user->active) {$this->notAcceptable(['This User is inactive.']); return $this->output();}
-        if ($user->deleted) {$this->notAcceptable(['This User has been deleted.']); return $this->output();}
+        if (!$user->active) {$this->notAcceptable('This User is inactive.'); return $this->output();}
+        if ($user->deleted) {$this->notAcceptable('This User has been deleted.'); return $this->output();}
         $user->updateActivity();
         $tokenResult = $user->createToken('Personal Access Token');
         $tokenResult->token->save();
@@ -89,7 +89,6 @@ class AuthController extends Controller
         ]);
 
         return $this->output();
-
     }
     public function logout()
     {
@@ -100,7 +99,7 @@ class AuthController extends Controller
     }
     public function email(Email $request)
     {
-        $this->success();
+        $this->success(User::where(['email' => $request->email])->first() === null);
         return $this->output();
     }
 
