@@ -7,16 +7,14 @@
  */
 
 namespace App\Http\Controllers;
-use App\Http\Requests\Auth\Register;
 use App\Http\Requests\User\Activate;
 use App\Http\Requests\User\Delete;
 use App\Http\Requests\User\Edit;
 use App\Http\Requests\User\Restore;
 use App\Http\Requests\User\SetAdmin;
-use App\Mail\ActivateAccount;
-use App\Mail\ResetPassword;
 use App\User;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Storage;
 
 
 class UserController extends Controller
@@ -80,5 +78,17 @@ class UserController extends Controller
         $user->delete();
         $this->success($user->getPretty(true));
         return $this->output();
+    }
+    public function logo(String $name)
+    {
+        $file_path = "public/logos/$name.png";
+        if (!Storage::exists($file_path)) {
+            abort(404);
+        }
+        $file = Storage::get($file_path);
+        $type = Storage::mimeType($file_path);
+        $response = Response::make($file, 200)->header("Content-Type", $type);
+
+        return $response;
     }
 }

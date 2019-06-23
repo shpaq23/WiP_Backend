@@ -17,7 +17,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 Route::group(['middleware' => 'auth:api'], function(){
-    ///passport authentication
+
     Route::get('user/logout', 'AuthController@logout');
     Route::get('user', 'UserController@user');
     Route::post('user/edit', 'UserController@edit');
@@ -36,3 +36,6 @@ Route::get('user/reactivate/{email}', 'AuthController@reactivate');
 Route::get('user/reset/{email}', 'AuthController@resetPasswordStep1');
 Route::post('user/reset', 'AuthController@resetPasswordStep2');
 Route::get('user/email/{email}', 'AuthController@email');
+
+//logos
+Route::get('logo/{name}', 'UserController@logo');
