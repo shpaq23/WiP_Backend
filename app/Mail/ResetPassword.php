@@ -7,6 +7,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Support\Facades\URL;
 
 class ResetPassword extends Mailable
 {
@@ -31,9 +32,11 @@ class ResetPassword extends Mailable
     public function build()
     {
         $resettingUrl = env('RESET_PASSWORD').'?token='.$this->user->token;
+        $logoUrl = URL::to('/api/logo');
         return $this->view('resetPassword')
             ->with([
-                'resettingUrl' => $resettingUrl
+                'resettingUrl' => $resettingUrl,
+                'logoUrl' => $logoUrl
             ]);
     }
 }

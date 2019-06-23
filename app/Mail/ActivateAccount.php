@@ -38,6 +38,7 @@ class ActivateAccount extends Mailable
         if ($this->fromCustomName) {
             $this->from(env('MAIL_FROM_ADDRESS'), $this->fromCustomName);
         }
+        $logoUrl = URL::to('/api/logo');
         $activationUrl = URL::to('/user/activate/'.$this->user->token);
         /// wip
         $positionMapper = [
@@ -72,6 +73,7 @@ class ActivateAccount extends Mailable
             ->with([
                 'positionMapper' => $positionMapper,
                 'activationUrl' => $activationUrl,
+                'logoUrl' => $logoUrl
             ]);
     }
 }
